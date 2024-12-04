@@ -45,20 +45,16 @@ export const getPostById = (req, res) => {
 export const publishPost = (req, res) => {
     const q = "INSERT INTO posts (title, description, category, img, date, uid) VALUES (?, ?, ?, ?, ?, ?)"
 
-    // Mendapatkan objek Date yang merepresentasikan waktu saat ini
     let currentTime = new Date();
 
-    // Mendapatkan informasi tahun, bulan, dan hari
     let year = currentTime.getFullYear();
-    let month = (currentTime.getMonth() + 1).toString().padStart(2, '0'); // Tambah 1 karena bulan dimulai dari 0
+    let month = (currentTime.getMonth() + 1).toString().padStart(2, '0');
     let day = currentTime.getDate().toString().padStart(2, '0');
 
-    // Mendapatkan informasi jam, menit, dan detik
     let hours = currentTime.getHours().toString().padStart(2, '0');
     let minutes = currentTime.getMinutes().toString().padStart(2, '0');
     let seconds = currentTime.getSeconds().toString().padStart(2, '0');
 
-    // Format datetime sesuai dengan format MySQL (YYYY-MM-DD HH:MM:SS)
     let mysqlDatetime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 
     db.query(q, [req.body.title, req.body.description, req.body.category, req.body.img, mysqlDatetime, req.data.id], (err, data) => {
@@ -77,7 +73,6 @@ export const deletePost = (req, res) => {
         if (data.affectedRows > 0) {
             return res.status(200).json("Post has been deleted");
         } else {
-            // Jika tidak ada baris yang terpengaruh (tidak ada data yang cocok)
             return res.status(404).json({ error: "Post not found or id does not match" });
         }
     })
@@ -86,20 +81,16 @@ export const deletePost = (req, res) => {
 export const updatePost = (req, res) => {
     const q = "UPDATE posts SET title = ?, description = ?, category = ?, img = ?, date = ? WHERE id = ?"
 
-    // Mendapatkan objek Date yang merepresentasikan waktu saat ini
     let currentTime = new Date();
 
-    // Mendapatkan informasi tahun, bulan, dan hari
     let year = currentTime.getFullYear();
-    let month = (currentTime.getMonth() + 1).toString().padStart(2, '0'); // Tambah 1 karena bulan dimulai dari 0
+    let month = (currentTime.getMonth() + 1).toString().padStart(2, '0');
     let day = currentTime.getDate().toString().padStart(2, '0');
 
-    // Mendapatkan informasi jam, menit, dan detik
     let hours = currentTime.getHours().toString().padStart(2, '0');
     let minutes = currentTime.getMinutes().toString().padStart(2, '0');
     let seconds = currentTime.getSeconds().toString().padStart(2, '0');
 
-    // Format datetime sesuai dengan format MySQL (YYYY-MM-DD HH:MM:SS)
     let mysqlDatetime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 
     db.query(q, [req.body.title, req.body.description, req.body.category, req.body.img, mysqlDatetime, req.params.id], (err, data) => {

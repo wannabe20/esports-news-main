@@ -1,8 +1,6 @@
 import axios from "axios";
 import { createContext, useEffect, useState } from "react";
 
-
-// Membuat Context
 export const AuthContext = createContext()
 
 

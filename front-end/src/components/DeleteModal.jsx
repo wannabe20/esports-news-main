@@ -33,7 +33,7 @@ function DeleteModal({ handleOpenModal }) {
                     <h1 className='font-medium text-xl'>Are you sure to delete this post?</h1>
                     <div className='flex justify-between items-center mt-8'>
                         <button onClick={handleOpenModal} className='px-3 py-2 rounded border-[2px] border-slate-400'>Cancel</button>
-                        <button onClick={() => deletePost()} className='px-3 py-2 rounded border-[2px] bg-red-300 border-red-700'>Delete</button>
+                        <button onClick={() => deletePost()} className='px-3 py-2 rounded border-[2px] bg-blue-300 border-blue-700'>Delete</button>
                     </div>
                 </div>
             </div>

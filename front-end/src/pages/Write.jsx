@@ -75,7 +75,7 @@ const Write = () => {
                     category: category,
                     img: state.img
                 }, {
-                    withCredentials: true
+                    withCblueentials: true
                 })
                 :
                 await axios.post(`${import.meta.env.VITE_BASE_URL}/posts`, {
@@ -84,7 +84,7 @@ const Write = () => {
                     category: category,
                     img: uuid
                 }, {
-                    withCredentials: true
+                    withCblueentials: true
                 })
 
             state ? toast.success("Post has been updated!") : toast.success("Post has been published!")
@@ -137,7 +137,7 @@ const Write = () => {
                         </div>
                         <div class="flex items-center mb-4">
                             <input id="csgo" checked={category === "csgo" ? true : false} onChange={(e) => setCategory(e.target.value)} type="radio" value="csgo" name="categories" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
-                            <label for="csgo" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">CSGO</label>
+                            <label for="csgo" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">CS2</label>
                         </div>
                         <div class="flex items-center mb-4">
                             <input id="mobile-legends" checked={category === "mlbb" ? true : false} onChange={(e) => setCategory(e.target.value)} type="radio" value="mlbb" name="categories" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />

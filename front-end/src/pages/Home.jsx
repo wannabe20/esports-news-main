@@ -20,7 +20,7 @@ const Home = () => {
 
     return (
         <>
-            <img className='absolute -z-10 h-screen w-screen object-cover max-h-[700px]' src="./esports.jpg" alt="esports" />
+            <img className='absolute -z-10 h-screen w-screen object-cover max-h-[700px]' src="./mercedes_benz_arena.jpg" alt="esports" />
             <div className='absolute -z-10 h-screen w-full  bg-black bg-opacity-80 max-h-[700px]' ></div>
             <div className='pt-24 md:pt-28'>
                 <div className='container mx-auto'>
@@ -45,12 +45,12 @@ const Home = () => {
                         {
                             posts.map((post) => (
                                 <div className='grid gap-2' key={post.id}>
-                                    <img className='object-cover h-48 w-full rounded' src={`https://mjyonzcfwgauldobukqn.supabase.co/storage/v1/object/public/post-images/${post.img}`} alt={post.title} />
+                                    <img className='object-cover h-48 w-full rounded' src={`https://cxxokttowtpnhkdujgjy.supabase.co/storage/v1/object/public/post-images/${post.img}`} alt={post.title} />
                                     <h1 className='text-2xl font-bold'>{post.title}</h1>
                                     <p>{post.desc}</p>
                                     <div className='flex mt-3'>
                                         <Link to={`/post/${post.id}`}>
-                                            <p className='bg-red-900 text-slate-100 font-medium p-2 rounded inline-block'>Read More</p>
+                                            <p className='bg-blue-900 text-slate-100 font-medium p-2 rounded inline-block'>Read More</p>
                                         </Link>
                                     </div>
                                 </div>
