@@ -48,7 +48,7 @@ function Navbar() {
                                 Valorant
                             </div>
                         </Link>
-                        <Link to="/category/csgo">
+                        <Link to="/category/cs2">
                             <div className='py-1 px-2 rounded hover:bg-blue-700 transition-colors duration-100'>
                                 CS2
                             </div>
@@ -98,7 +98,7 @@ function Navbar() {
 
                 {/* Navbar Large */}
                 <div className='gap-2 mt-5 lg:mt-0 hidden lg:flex flex-col lg:flex-row items-center text-slate-100'>
-                    <Link to="/category/csgo">
+                    <Link to="/category/cs2">
                         <div className='py-1 px-2 rounded hover:bg-blue-700 transition-colors duration-100'>
                             CS2
                         </div>

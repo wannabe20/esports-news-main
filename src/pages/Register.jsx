@@ -14,10 +14,7 @@ const Register = () => {
     const navigate = useNavigate()
 
     const handleChange = e => {
-        // Bisa seperti ini menggunakan nilai sebelumnya
         setData((prev) => ({ ...prev, [e.target.name]: e.target.value }))
-        // Atau seperti ini menggunakan data sebenarnya
-        // setData({ ...data, [e.target.name]: e.target.value })
     }
 
     const handleSubmit = async (e) => {

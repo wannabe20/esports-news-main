@@ -27,7 +27,7 @@ const Menu = ({ cat }) => {
             <div className='grid min-[400px]:grid-cols-2 md:grid-cols-1 gap-10 min-[400px]:gap-5 lg:gap-10'>
                 {rec && rec.map(post => (
                     <Link to={`/post/${post.id}`} key={post.id} className='cursor-pointer hover:underline'>
-                        <img className='rounded h-42 w-full object-cover' src={`https://cxxokttowtpnhkdujgjy.supabase.co/storage/v1/object/public/post-images/${post.img}`} alt={post.title} />
+                        <img className='rounded h-42 w-full object-cover' src={`https://cxxokttowtpnhkdujgjy.supabase.co/storage/buckets/post-images/${post.img}`} alt={post.title} />
                         <h1 className='text-xl mt-2 font-bold line-clamp-2'>{post.title}</h1>
                     </Link>
                 ))}
