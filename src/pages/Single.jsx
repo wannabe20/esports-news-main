@@ -45,7 +45,7 @@ const Single = () => {
         <>
             <div className='container grid grid-cols-1 md:grid-cols-4 gap-8 lg:gap-14 mx-auto pt-24 md:pt-32 pb-40'>
                 {post && <div className="md:col-span-3">
-                    <img className='w-full object-cover h-72 rounded mb-6' src={`https://mjyonzcfwgauldobukqn.supabase.co/storage/v1/object/public/post-images/${post.img}`} alt="bg" />
+                    <img className='w-full object-cover h-72 rounded mb-6' src={`https://cxxokttowtpnhkdujgjy.supabase.co/storage/v1/object/public/post-images/${post.img}`} alt="bg" />
                     <div className='flex gap-x-5 items-center mb-8'>
                         {/* Profile */}
                         <img className='h-12 w-12 rounded-full' src="/bg.png" alt="profile" />
