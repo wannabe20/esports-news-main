@@ -1,8 +1,7 @@
-import mysql from "mysql"
+import { createClient } from '@supabase/supabase-js';
 
-export const db = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "",
-    database: "esports_news"
-})
+
+export const supabase = createClient(
+    process.env.SUPABASE_URL, // Replace with your Supabase URL
+    process.env.SUPABASE_KEY  // Replace with your Supabase API Key
+);

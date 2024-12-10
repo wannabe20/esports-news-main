@@ -1,101 +1,116 @@
 import { db } from "../db.js"
 import jwt from "jsonwebtoken"
 
-export const getAllPosts = (req, res) => {
-    const category = req.query.category || ""
-    const limit = parseInt(req.query.limit) || 10
-    const page = req.query.page || 1
+export const getAllPosts = async (req, res) => {
+    const category = req.query.category || "";
+    const limit = parseInt(req.query.limit) || 10;
+    const page = req.query.page || 1;
 
-    const offset = (page - 1) * limit
+    const offset = (page - 1) * limit;
 
-    let q = "SELECT * FROM posts "
+    try {
+        const query = supabase
+            .from("posts")
+            .select("*", { count: "exact" })
+            .range(offset, offset + limit - 1);
 
-    if (category) {
-        q += "WHERE category = ? LIMIT ? OFFSET ?"
+        if (category) query.eq("category", category);
 
-        db.query(q, [category, limit, offset], (err, data) => {
-            if (err) return res.status(500).json(err)
-            if (data.length < 1) return res.status(404).json("Category Is Not Available")
+        const { data, error, count } = await query;
 
-            return res.status(200).json(data)
-        })
+        if (error) return res.status(500).json(error);
+        if (data.length < 1) return res.status(404).json("No posts available.");
 
-    } else {
-        q += "LIMIT ? OFFSET ? "
-        db.query(q, [limit, offset], (err, data) => {
-            if (err) return res.status(500).json(err)
-            if (data.length < 1) return res.status(404).json("No Post Available")
-
-            return res.status(200).json(data)
-        })
+        return res.status(200).json({ data, total: count });
+    } catch (err) {
+        return res.status(500).json(err);
     }
-}
+};
 
-export const getPostById = (req, res) => {
-    const q = "SELECT u.username, p.* FROM `posts` p JOIN `users` u ON u.id = p.uid WHERE p.id = ?"
 
-    db.query(q, [parseInt(req.params.id)], (err, data) => {
-        if (err) return res.status(500).json(err)
-        if (data.length < 1) return res.status(404).json("Post not found")
+export const getPostById = async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from("posts")
+            .select("*, users(username)")
+            .eq("id", req.params.id)
+            .single();
 
-        return res.status(200).json(data)
-    })
-}
+        if (error) return res.status(500).json(error);
+        if (!data) return res.status(404).json("Post not found.");
 
-export const publishPost = (req, res) => {
-    const q = "INSERT INTO posts (title, description, category, img, date, uid) VALUES (?, ?, ?, ?, ?, ?)"
+        return res.status(200).json(data);
+    } catch (err) {
+        return res.status(500).json(err);
+    }
+};
 
-    let currentTime = new Date();
 
-    let year = currentTime.getFullYear();
-    let month = (currentTime.getMonth() + 1).toString().padStart(2, '0');
-    let day = currentTime.getDate().toString().padStart(2, '0');
+export const publishPost = async (req, res) => {
+    const currentTime = new Date().toISOString();
 
-    let hours = currentTime.getHours().toString().padStart(2, '0');
-    let minutes = currentTime.getMinutes().toString().padStart(2, '0');
-    let seconds = currentTime.getSeconds().toString().padStart(2, '0');
+    try {
+        const { data, error } = await supabase
+            .from("posts")
+            .insert([
+                {
+                    title: req.body.title,
+                    description: req.body.description,
+                    category: req.body.category,
+                    img: req.body.img,
+                    date: currentTime,
+                    uid: req.data.id,
+                },
+            ])
+            .select();
 
-    let mysqlDatetime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+        if (error) return res.status(500).json(error);
 
-    db.query(q, [req.body.title, req.body.description, req.body.category, req.body.img, mysqlDatetime, req.data.id], (err, data) => {
-        if (err) return res.status(500).json(err)
+        return res.status(200).json({ msg: "Post has been published", id: data[0].id });
+    } catch (err) {
+        return res.status(500).json(err);
+    }
+};
 
-        return res.status(200).json({ msg: "Post has been published", id: data.insertId })
-    })
-}
 
-export const deletePost = (req, res) => {
-    const q = "DELETE FROM posts WHERE id = ? AND uid = ?"
+export const deletePost = async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from("posts")
+            .delete()
+            .eq("id", req.params.id)
+            .eq("uid", req.data.id);
 
-    db.query(q, [req.params.id, req.data.id], (err, data) => {
-        if (err) return res.status(500).json(err)
+        if (error) return res.status(500).json(error);
+        if (data.length === 0) return res.status(404).json("Post not found or unauthorized.");
 
-        if (data.affectedRows > 0) {
-            return res.status(200).json("Post has been deleted");
-        } else {
-            return res.status(404).json({ error: "Post not found or id does not match" });
-        }
-    })
-}
+        return res.status(200).json("Post has been deleted.");
+    } catch (err) {
+        return res.status(500).json(err);
+    }
+};
 
-export const updatePost = (req, res) => {
-    const q = "UPDATE posts SET title = ?, description = ?, category = ?, img = ?, date = ? WHERE id = ?"
 
-    let currentTime = new Date();
+export const updatePost = async (req, res) => {
+    const currentTime = new Date().toISOString();
 
-    let year = currentTime.getFullYear();
-    let month = (currentTime.getMonth() + 1).toString().padStart(2, '0');
-    let day = currentTime.getDate().toString().padStart(2, '0');
+    try {
+        const { data, error } = await supabase
+            .from("posts")
+            .update({
+                title: req.body.title,
+                description: req.body.description,
+                category: req.body.category,
+                img: req.body.img,
+                date: currentTime,
+            })
+            .eq("id", req.params.id);
 
-    let hours = currentTime.getHours().toString().padStart(2, '0');
-    let minutes = currentTime.getMinutes().toString().padStart(2, '0');
-    let seconds = currentTime.getSeconds().toString().padStart(2, '0');
+        if (error) return res.status(500).json(error);
+        if (data.length === 0) return res.status(404).json("Post not found.");
 
-    let mysqlDatetime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-
-    db.query(q, [req.body.title, req.body.description, req.body.category, req.body.img, mysqlDatetime, req.params.id], (err, data) => {
-        if (err) return res.status(500).json(err)
-
-        return res.status(200).json("Post has been updated")
-    })
-}
+        return res.status(200).json("Post has been updated.");
+    } catch (err) {
+        return res.status(500).json(err);
+    }
+};
