@@ -1,4 +1,3 @@
-import axios from 'axios';
 import React, { useContext, useEffect, useState } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
@@ -24,11 +23,14 @@ const Write = () => {
     const uploadImage = async () => {
         if (!image) return null;
         try {
-            const { data, error } = await supabase.storage.from('post-images').upload(uuid, image, { cacheControl: '10' });
+            const { data, error } = await supabase.storage
+                .from('post-images')
+                .upload(uuid, image, { cacheControl: '3600' });
             if (error) throw error;
             return uuid;
         } catch (error) {
             console.error('Image upload error:', error.message);
+            toast.error('Failed to upload image.');
             return null;
         }
     };
@@ -36,11 +38,14 @@ const Write = () => {
     const updateImage = async () => {
         if (!image) return state.img;
         try {
-            const { data, error } = await supabase.storage.from('post-images').update(state.img, image, { cacheControl: '10', upsert: true });
+            const { error } = await supabase.storage
+                .from('post-images')
+                .update(state.img, image, { cacheControl: '3600', upsert: true });
             if (error) throw error;
             return state.img;
         } catch (error) {
-            console.error('Image update error:', error);
+            console.error('Image update error:', error.message);
+            toast.error('Failed to update image.');
             return null;
         }
     };
@@ -49,20 +54,23 @@ const Write = () => {
         e.preventDefault();
         try {
             const fileName = state ? await updateImage() : await uploadImage();
-            const endpoint = state
-                ? `${import.meta.env.VITE_SUPABASE_URL}/posts/update/${state.id}`
-                : `${import.meta.env.VITE_SUPABASE_URL}/posts`;
 
-            const payload = { title, description, category, img: fileName };
-            const request = state
-                ? axios.put(endpoint, payload, { withCredentials: true })
-                : axios.post(endpoint, payload, { withCredentials: true });
+            if (!fileName) {
+                toast.error('Image is required.');
+                return;
+            }
 
-            await request;
+            const payload = { title, description, category, img: fileName, user_id: currentUser.id };
+            const { error } = state
+                ? await supabase.from('posts').update(payload).eq('id', state.id)
+                : await supabase.from('posts').insert(payload);
+
+            if (error) throw error;
+
             toast.success(state ? 'Post has been updated!' : 'Post has been published!');
             navigate(state ? `/post/${state.id}` : `/post/${uuid}`);
         } catch (error) {
-            console.error('Error publishing post:', error);
+            console.error('Error publishing post:', error.message);
             toast.error('Failed to publish post.');
         } finally {
             setTitle('');
@@ -72,9 +80,8 @@ const Write = () => {
     };
 
     useEffect(() => {
-        window.scrollTo(0, 0);
         if (!currentUser) navigate('/login');
-    }, [currentUser]);
+    }, [currentUser, navigate]);
 
     return (
         <div className='container grid grid-cols-1 min-[1300px]:grid-cols-4 gap-8 lg:gap-14 mx-auto pt-24 md:pt-32 pb-40'>
@@ -97,29 +104,19 @@ const Write = () => {
             <div className='flex w-full mt-10 flex-col min-[650px]:flex-row min-[1300px]:flex-col min-[1300px]:mt-0 gap-10'>
                 <div className='border-[1px] flex-1 border-slate-300 p-8'>
                     <h1 className='text-2xl font-bold mb-5'>Games Category</h1>
-                    {[
-                        { id: 'league-of-legends', value: 'league-of-legends', label: 'League of Legends' },
-                        { id: 'dota-2', value: 'dota-2', label: 'Dota 2' },
-                        { id: 'valorant', value: 'valorant', label: 'Valorant' },
-                        { id: 'cs2', value: 'cs2', label: 'Counter-Strike 2' },
-                        { id: 'mlbb', value: 'mlbb', label: 'Mobile Legends' },
-                        { id: 'pubg-mobile', value: 'pubg-mobile', label: 'PUBG-mobile' },
-                    ].map((cat) => (
-                        <div className="flex items-center mb-4" key={cat.id}>
+                    {['league-of-legends', 'dota-2', 'valorant', 'cs2', 'mlbb', 'pubg-mobile'].map((cat) => (
+                        <div className="flex items-center mb-4" key={cat}>
                             <input
-                                id={cat.id}
-                                checked={category === cat.value}
+                                id={cat}
+                                checked={category === cat}
                                 onChange={(e) => setCategory(e.target.value)}
                                 type="radio"
-                                value={cat.value}
+                                value={cat}
                                 name="categories"
-                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300"
                             />
-                            <label
-                                htmlFor={cat.id}
-                                className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-                            >
-                                {cat.label || cat.value}
+                            <label htmlFor={cat} className="ms-2 text-sm font-medium text-gray-900">
+                                {cat}
                             </label>
                         </div>
                     ))}
@@ -127,16 +124,12 @@ const Write = () => {
 
                 <div className='border-[1px] flex-1 border-slate-300 p-8'>
                     <h1 className='text-2xl font-bold mb-5'>Publish</h1>
-                    <label
-                        className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                        htmlFor="file_input"
-                    >
+                    <label className="block mb-2 text-sm font-medium text-gray-900" htmlFor="file_input">
                         Upload file
                     </label>
                     <input
                         onChange={(e) => setImage(e.target.files[0])}
-                        name='post-image'
-                        className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+                        className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg"
                         id="file_input"
                         type="file"
                     />

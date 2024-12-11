@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { supabase } from '../supabase'; // Import Supabase client
+import { supabase } from "../../supabase";
 
 const Menu = ({ cat }) => {
     const [rec, setRec] = useState([]);

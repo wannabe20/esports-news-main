@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { supabase } from '../supabase'; // Import Supabase client
+import { supabase } from "../../supabase";
 
 function DeleteModal({ handleOpenModal }) {
     const location = useLocation();
