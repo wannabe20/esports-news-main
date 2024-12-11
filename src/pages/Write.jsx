@@ -22,73 +22,48 @@ const Write = () => {
     const uuid = uuidv4();
 
     const uploadImage = async () => {
-        if (image) {
-            console.log("Uploading image:", image.name);
-            const { data, error } = await supabase.storage
-                .from('post-images')
-                .upload(uuid, image, {
-                    cacheControl: '10',
-                });
-    
-            if (error) {
-                console.error("Image upload error:", error.message);
-                return null;
-            }
-    
-            console.log("Image uploaded successfully:", data.path);
-            return uuid; // Return the filename
+        if (!image) return null;
+        try {
+            const { data, error } = await supabase.storage.from('post-images').upload(uuid, image, { cacheControl: '10' });
+            if (error) throw error;
+            return uuid;
+        } catch (error) {
+            console.error('Image upload error:', error.message);
+            return null;
         }
-        console.log("No image selected for upload.");
-        return null;
     };
-    
 
     const updateImage = async () => {
-        if (image) {
-            const { data, error } = await supabase
-                .storage
-                .from('post-images')
-                .update(state.img, image, {
-                    cacheControl: 10,
-                    upsert: true,
-                });
-
-            if (error) {
-                console.error("Image update error:", error);
-                return null;
-            }
-
-            console.log("Image updated:", data);
-            return state.img; // Return the existing filename
+        if (!image) return state.img;
+        try {
+            const { data, error } = await supabase.storage.from('post-images').update(state.img, image, { cacheControl: '10', upsert: true });
+            if (error) throw error;
+            return state.img;
+        } catch (error) {
+            console.error('Image update error:', error);
+            return null;
         }
-        return state.img; // If no new image, keep the current one
     };
 
     const handlePublish = async (e) => {
         e.preventDefault();
-
         try {
             const fileName = state ? await updateImage() : await uploadImage();
+            const endpoint = state
+                ? `${import.meta.env.VITE_SUPABASE_URL}/posts/update/${state.id}`
+                : `${import.meta.env.VITE_SUPABASE_URL}/posts`;
 
-            const res = state
-                ? await axios.put(`${import.meta.env.VITE_BASE_URL}/posts/update/${state.id}`, {
-                      title,
-                      description,
-                      category,
-                      img: fileName,
-                  }, { withCredentials: true })
-                : await axios.post(`${import.meta.env.VITE_BASE_URL}/posts`, {
-                      title,
-                      description,
-                      category,
-                      img: fileName,
-                  }, { withCredentials: true });
+            const payload = { title, description, category, img: fileName };
+            const request = state
+                ? axios.put(endpoint, payload, { withCredentials: true })
+                : axios.post(endpoint, payload, { withCredentials: true });
 
-            toast.success(state ? "Post has been updated!" : "Post has been published!");
-            navigate(state ? `/post/${state.id}` : `/post/${res.data.id}`);
+            await request;
+            toast.success(state ? 'Post has been updated!' : 'Post has been published!');
+            navigate(state ? `/post/${state.id}` : `/post/${uuid}`);
         } catch (error) {
-            console.error("Error publishing post:", error);
-            toast.error("Failed to publish post.");
+            console.error('Error publishing post:', error);
+            toast.error('Failed to publish post.');
         } finally {
             setTitle('');
             setDescription('');
@@ -98,7 +73,7 @@ const Write = () => {
 
     useEffect(() => {
         window.scrollTo(0, 0);
-        if (!currentUser) navigate("/login");
+        if (!currentUser) navigate('/login');
     }, [currentUser]);
 
     return (
@@ -120,16 +95,15 @@ const Write = () => {
             </div>
 
             <div className='flex w-full mt-10 flex-col min-[650px]:flex-row min-[1300px]:flex-col min-[1300px]:mt-0 gap-10'>
-                {/* Category Selection */}
                 <div className='border-[1px] flex-1 border-slate-300 p-8'>
                     <h1 className='text-2xl font-bold mb-5'>Games Category</h1>
                     {[
-                        { id: "league-of-legends", value: "league-of-legends", label: "League of Legends" },
-                        { id: "dota-2", value: "dota-2", label: "Dota 2" },
-                        { id: "valorant", value: "valorant", label: "Valorant" },
-                        { id: "cs2", value: "cs2", label: "Counter-Strike 2" },
-                        { id: "mlbb", value: "mlbb", label: "Mobile Legends" },
-                        { id: "pubg-mobile", value: "pubg-mobile", label: "PUBG-mobile" },
+                        { id: 'league-of-legends', value: 'league-of-legends', label: 'League of Legends' },
+                        { id: 'dota-2', value: 'dota-2', label: 'Dota 2' },
+                        { id: 'valorant', value: 'valorant', label: 'Valorant' },
+                        { id: 'cs2', value: 'cs2', label: 'Counter-Strike 2' },
+                        { id: 'mlbb', value: 'mlbb', label: 'Mobile Legends' },
+                        { id: 'pubg-mobile', value: 'pubg-mobile', label: 'PUBG-mobile' },
                     ].map((cat) => (
                         <div className="flex items-center mb-4" key={cat.id}>
                             <input
@@ -151,7 +125,6 @@ const Write = () => {
                     ))}
                 </div>
 
-                {/* Publish Information */}
                 <div className='border-[1px] flex-1 border-slate-300 p-8'>
                     <h1 className='text-2xl font-bold mb-5'>Publish</h1>
                     <label
@@ -172,7 +145,7 @@ const Write = () => {
                             onClick={handlePublish}
                             className='border-[1px] border-green-700 bg-green-700 text-slate-100 py-2 px-4'
                         >
-                            {state ? "Update" : "Publish"}
+                            {state ? 'Update' : 'Publish'}
                         </button>
                     </div>
                 </div>
