@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { supabase } from '../../supabase.js';
+import supabase from '../../supabase.js';
 
 const Register = () => {
   const [data, setData] = useState({

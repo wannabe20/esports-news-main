@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { supabase } from '../../supabase.js';
+import supabase from '../../supabase.js';
 
 function Category() {
     const [posts, setPosts] = useState([]);
