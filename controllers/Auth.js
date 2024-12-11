@@ -1,59 +1,81 @@
-import { db } from "../db.js"
-import bcrypt from "bcryptjs"
-import jwt from "jsonwebtoken"
+import { supabase } from '../supabase.js'; 
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
-export const Register = (req, res) => {
-    const q = "SELECT * FROM users WHERE email = ? OR username = ?"
-    db.query(q, [req.body.email, req.body.username], (err, data) => {
-        if (err) {
-            return res.json(err)
-        }
+// Register function using Supabase
+export const Register = async (req, res) => {
+    try {
+        // Check if the user already exists by email or username
+        const { data, error } = await supabase
+            .from('users')
+            .select('*')
+            .or(`email.eq.${req.body.email},username.eq.${req.body.username}`);
+
+        if (error) return res.json(error);
 
         if (data.length) {
-            return res.status(409).json("User is exsisted!")
+            return res.status(409).json("User already exists!");
         }
 
-        var salt = bcrypt.genSaltSync(10);
-        var hash = bcrypt.hashSync(req.body.password, salt);
+        // Hash the password
+        const salt = bcrypt.genSaltSync(10);
+        const hash = bcrypt.hashSync(req.body.password, salt);
 
+        // Insert the new user into the users table
+        const { error: insertError } = await supabase
+            .from('users')
+            .insert([
+                { username: req.body.username, email: req.body.email, password: hash }
+            ]);
 
-        const q = "INSERT INTO users (username, email, password) VALUES (?, ?, ?)"
-        db.query(q, [req.body.username, req.body.email, hash], (err, data) => {
-            if (err) return res.json(err)
+        if (insertError) return res.json(insertError);
 
-            return res.status(200).json("User has been created!")
-        })
-    })
+        return res.status(200).json("User has been created!");
+    } catch (err) {
+        return res.status(500).json(err);
+    }
 }
 
-export const Login = (req, res) => {
-    const q = "SELECT * FROM USERS WHERE username = ?"
+// Login function using Supabase
+export const Login = async (req, res) => {
+    try {
+        // Fetch user by username
+        const { data, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('username', req.body.username)
+            .single(); // Assuming username is unique
 
-    db.query(q, [req.body.username], (err, data) => {
-        if (err) return res.json(err)
-        if (data.length === 0) return res.status(404).json("User Not Found")
+        if (error) return res.json(error);
+        if (!data) return res.status(404).json("User not found");
 
-        if (!bcrypt.compareSync(req.body.password, data[0].password)) {
-            return res.status(401).json("Wrong Password")
+        // Check password
+        if (!bcrypt.compareSync(req.body.password, data.password)) {
+            return res.status(401).json("Wrong password");
         }
 
+        // Create JWT token
+        const token = jwt.sign({ id: data.id }, "kuncijwt");
 
-        const token = jwt.sign({ id: data[0].id }, "kuncijwt")
+        // Exclude password from the response
+        const { password, ...other } = data;
 
-        const { password, ...other } = data[0]
-
+        // Set the JWT token as a cookie
         res.cookie("access_token", token, {
             httpOnly: true,
             sameSite: "none",
             secure: true,
-        }).status(200).json(other)
-    })
-    console.log("Token : " + req.cookies.access_token);
+        }).status(200).json(other);
+
+    } catch (err) {
+        return res.status(500).json(err);
+    }
 }
 
+// Logout function
 export const Logout = (req, res) => {
     res.clearCookie("access_token", {
         sameSite: "none",
         secure: true
-    }).status(200).json("User has been logged out")
+    }).status(200).json("User has been logged out");
 }

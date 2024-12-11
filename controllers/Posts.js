@@ -1,4 +1,4 @@
-import { db } from "../db.js"
+import { supabase } from '../supabase.js';
 import jwt from "jsonwebtoken"
 
 export const getAllPosts = async (req, res) => {
